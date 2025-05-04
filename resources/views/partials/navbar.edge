@@ -1,0 +1,36 @@
+<!-- Navbar (Hamburger always visible) -->
+<nav class="navbar navbar-dark bg-dark">
+  <div class="container-fluid">
+    <button
+      class="btn btn-dark"
+      type="button"
+      data-bs-toggle="offcanvas"
+      data-bs-target="#sidebar"
+      aria-controls="sidebar"
+    >
+      <i class="bi bi-list" style="font-size: 1.5rem;"></i>
+    </button>
+    @if(auth.user.role === 3 )
+      <a type="button" class="btn btn-primary bi bi-alarm" href="{{ route('mains.reserve') }}">        <span class="ms-2">จองคิว</span></a>
+    @endif
+  </div>
+</nav>
+
+<!-- Offcanvas Sidebar -->
+<div class="offcanvas offcanvas-start text-bg-dark" tabindex="-1" id="sidebar">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title">
+      เมนู
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body p-0">
+    <a href="{{ route('mains.home') }}" class="sidebar-link">      <i class="bi bi-house-door"></i>หน้าแรก</a>
+    @if(auth.user.role === 3 )
+      <a href="{{ route('mains.reserve') }}" class="sidebar-link">        <i class="bi bi-people"></i>จองคิวช่าง</a>
+    @endif
+    <a href="{{ route('mains.history') }}" class="sidebar-link">      <i class="bi bi-bar-chart"></i>ข้อมูลการใช้บริการ</a>
+    <a href="{{ route('users.logout', { id: auth.user.id }) }}" class="sidebar-link">      <i class="bi bi-arrow-right-square"></i>ออกจากระบบ</a>
+
+  </div>
+</div>

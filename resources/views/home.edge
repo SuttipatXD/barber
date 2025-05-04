@@ -1,0 +1,39 @@
+@component('./layout/main.edge', { title: 'หน้าหลัก' })
+
+  @slot('main')
+    <div class="container mt-4">
+      <h5 class="fw-bold">
+        <i class="bi bi-house-door-fill me-2"></i>หน้าหลัก
+        <button class="btn btn-sm btn-primary" onclick="refreshTasks()"><i class="bi bi-arrow-clockwise"></i></button>
+
+      </h5>
+      <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3 my-2" id="taskList">
+        @each(employee in employees)
+          <div class="col">
+            <div class="card h-100 shadow-sm border-0 rounded-3">
+              <div class="card-body p-3 d-flex flex-column justify-content-between">
+                <div class="d-grid gap-1">
+                  <h6 class="card-title text-muted">
+                    ชื่อ:
+                    {{-- <i class="bi bi-person-circle mx-1"></i> --}}
+                    {{ employee.fullName }}
+                  </h6>
+                  <div class="d-flex align-items-center">
+                    สถานะ:
+                    @if(employee.$extras.employee_status_name === 'ว่าง')
+                      <i class="bi bi-circle-fill text-success mx-1"></i>
+                      <span class="text-success fw-medium">ว่าง</span>
+                    @else
+                      <i class="bi bi-circle-fill text-danger mx-1"></i>
+                      <span class="text-danger fw-medium">ไม่ว่าง</span>
+                    @endif
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        @endeach
+      </div>
+    @end
+    
+  @endcomponent

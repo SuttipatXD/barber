@@ -1,0 +1,44 @@
+@component('./layout/main.edge', { title: 'จองคิว' })
+
+  @slot('main')
+    <div class="container mt-4">
+      <h5 class="fw-bold">
+        <i class="bi bi-people-fill me-2"></i> จองคิวช่าง
+      </h5>
+
+      <form method="POST" action="{{ route('mains.reserving') }}">
+        {{ csrfField() }}
+
+        <div class="mb-3 form-check">
+          <input class="form-check-input" type="checkbox" value="1" id="noBarberCheck" onchange="toggleBarberSelect(this)">
+          <label class="form-check-label" for="noBarberCheck">
+            ไม่ระบุช่าง (ระบบจะเลือกให้อัตโนมัติ)
+          </label>
+        </div>
+        <div class="mb-3">
+          <label for="barber" class="form-label">เลือกช่าง</label>
+          <select name="barber_id" id="barberSelect" class="form-select" required>
+            <option value="">-- กรุณาเลือกช่าง --</option>
+            @each(barbers in barber)
+              <option value="{{ barbers.id }}">{{ barbers.fullName }}</option>
+            @endeach
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="time" class="form-label">เลือกช่วงเวลา</label>
+          <select name="time" class="form-select" required>
+            @each(time in times)
+              <option value="{{ time.id }}">{{ time.time }}</option>
+            @endeach
+          </select>
+        </div>
+
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-primary w-100">ยืนยัน</button>
+          <a type="button" class="btn btn-secondary w-100" href="{{ route('mains.home') }}">กลับ</a>
+        </div>
+      </form>
+    </div>
+  @end
+@end

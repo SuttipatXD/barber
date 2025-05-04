@@ -1,0 +1,24 @@
+@component('./layout/main.edge', { title: 'จองสำเร็จ' })
+
+  @slot('main')
+    <div class="container py-5">
+      <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+          <div class="alert alert-success rounded-3 shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill text-success fs-2 mb-3"></i>
+            <h5 class="alert-heading fw-bold">
+              {{ header }}
+            </h5>
+            <p class="mb-0">
+              {{ message }}
+            </p>
+          </div>
+          <a href="{{ route('mains.home') }}" class="btn btn-primary mt-3">
+            กลับไปหน้าหลัก
+          </a>
+        </div>
+      </div>
+    </div>
+  @end
+
+@endcomponent

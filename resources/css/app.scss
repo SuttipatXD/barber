@@ -1,0 +1,54 @@
+@import 'bootstrap/scss/bootstrap';
+$bootstrap-icons-font-dir: 'bootstrap-icons/font/fonts/';
+@import 'bootstrap-icons/font/bootstrap-icons.scss';
+
+
+body {
+    background-color: #f1f4f9;
+    overflow-x: hidden;
+  }
+  .login-card {
+    background-color: #f8f9fa;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  .form-control-custom {
+    background-color: #e9e9e9;
+    border: none;
+    border-radius: 10px;
+    padding-left: 2.5rem;
+  }
+  .icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+  }
+
+  .sidebar-link {
+    padding: 0.75rem 1.25rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+  }
+  .sidebar-link i {
+    margin-right: 10px;
+  }
+  .sidebar-link:hover {
+    background-color: #495057;
+  }
+
+  @media (max-width: 767.98px) {
+    .offcanvas-start {
+      width: 100vw !important;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .offcanvas-start {
+      width: 250px;
+    }
+  }

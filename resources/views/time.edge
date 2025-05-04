@@ -1,0 +1,38 @@
+@component('./layout/main.edge', { title: 'ตั้งค่าเวลา' })
+  @slot('main')
+    <div class="container mt-4">
+      <h5 class="fw-bold">
+        <i class="bi bi-clock-fill me-2"></i> ตั้งค่าเวลาเปิด-ปิดร้าน
+      </h5>
+      <form method="POST" action="{{ route('mains.timesetting') }}">
+        {{ csrfField() }}
+
+        <div class="mb-3">
+          <label for="start_time" class="form-label">เวลาเปิดร้าน</label>
+          <select name="start_time" id="start_time" class="form-select" required>
+            @each(time in times)
+            <option value="{{ time.id }}">{{ time.time }}</option>
+            {{ time }}
+              </option>
+            @endeach
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="end_time" class="form-label">เวลาปิดร้าน</label>
+          <select name="end_time" id="end_time" class="form-select" required>
+            @each(time in times)
+            <option value="{{ time.id }}">{{ time.time }}</option>
+            {{ time }}
+              </option>
+            @endeach
+          </select>
+        </div>
+
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-primary w-100">บันทึก</button>
+        </div>
+      </form>
+    </div>
+  @end
+@endcomponent

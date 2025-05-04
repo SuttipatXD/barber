@@ -1,0 +1,65 @@
+@component('./layout/main.edge', { title: 'เข้าสู่ระบบ' })
+  @slot('navbar')
+    <div class="mt-1">
+    </div>
+  @end
+  
+  @slot('main')
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+      <div class="login-card w-100" style="max-width: 450px;">
+        <form action="{{ route('users.login') }}" method="POST">
+          {{ csrfField() }}
+          <div class="h2 my-2 text-center">
+            เข้าสู่ระบบ
+          </div>
+          <div class="my-3 text-center">
+            กรุณากรอกอีเมล์ และรหัสผ่าน
+          </div>
+          @flashMessage('errors')
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <ul class="list-unstyled mb-0">
+              @each(error in $message)
+                <li class="small">
+                  {{ error }}
+                </li>
+              @endeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        @end
+          <div class="mb-3 position-relative">
+            <i class="bi bi-envelope-fill icon"></i>
+            <input type="text" name="email" id="email" class="form-control form-control-custom" placeholder="อีเมล์ (ชื่อผู้ใช้)" />
+          </div>
+          <div class="mb-4 position-relative">
+            <i class="bi bi-lock-fill icon"></i>
+            <input
+              type="password"
+              name="password"
+              id="password"
+              class="form-control form-control-custom"
+              placeholder="รหัสผ่าน"
+            />
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 fw-bold">เข้าสู่ระบบ</button>
+
+          <div class="text-center mt-3">
+            <small>
+              <a href="{{ route('users.registerform') }}">สมัครสมาชิก หากยังไม่มีในระบบ?</a>
+            </small>
+          </div>
+          <div class="text-center mt-3">
+            <small>
+              <button type="button" class="btn btn-outline-secondary btn-sm" onclick="prefillDataAdmin()">แอดมิน</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" onclick="prefillDataEmployee()">ช่างตัดผม</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" onclick="prefillDataCustomer()">ลูกค้า</button>
+            </div>
+              </small>
+          </div>
+        </form>
+      </div>
+    </div>
+  @end
+  
+@endcomponent
