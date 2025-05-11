@@ -157,4 +157,13 @@ export default class MainsController {
       })
     }
   }
+
+  async delete({ view }: HttpContext) {
+    const data = await Log.query().where('id', 1).first()
+    await data?.save()
+    return view.render('reservesuccess', {
+      header: 'ลบข้อมูลสำเร็จ',
+      message: 'ลบข้อมูลการใช้บริการเสร็จสมบูรณ์แล้ว',
+    })
+  }
 }
