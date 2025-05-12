@@ -50,6 +50,14 @@
                       </button>
                     </form>
                   @endif
+                  @if(auth.user.role === 1 && log.work_status === 1)
+                    <form method="POST" action="{{ route('mains.deletetask', { id: log.$attributes.id }) }}">
+                      {{ csrfField() }}
+                    <button type="submit" class="btn btn-danger my-2 w-100">
+                        <i class="bi bi-x-circle-fill me-1"></i>
+                      </button>
+                    </form>
+                  @endif
                 </div>
               </div>
             </div>

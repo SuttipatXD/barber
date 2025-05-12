@@ -15,6 +15,7 @@ router
     router.get('/time', [MainsController, 'time']).as('mains.time')
     router.get('/reserve', [MainsController, 'reserve']).as('mains.reserve')
     router.post('/updatetask/:id', [MainsController, 'updateTask']).as('mains.updatetask')
+    router.post('/deletetask/:id', [MainsController, 'deleteTask']).as('mains.deletetask')
     router.post('/reserving', [MainsController, 'reserving']).as('mains.reserving')
     router.get('/history', [MainsController, 'history']).as('mains.history')
   })

@@ -53,6 +53,28 @@ export default class MainsController {
     })
   }
 
+  async deleteTask({ view, params }: HttpContext) {
+    const idTask = params.id
+    console.log('task is:', idTask)
+
+    const task = await Log.find(idTask)
+
+    if (!task) {
+      console.log('ไม่พบงาน')
+      return view.render('reservefail', {
+        header: 'เกิดข้อผิดพลาด',
+        message: 'ไม่พบงาน โปรดลองใหม่อีกครั้ง',
+      })
+    }
+
+    await task.delete()
+
+    return view.render('reservesuccess', {
+      header: 'ลบข้อมูลสำเร็จ',
+      message: 'ลบข้อมูลการใช้บริการเสร็จสมบูรณ์แล้ว',
+    })
+  }
+
   async history({ view, auth }: HttpContext) {
     // ใน controller
     const roleId = auth.user!.role
@@ -156,14 +178,5 @@ export default class MainsController {
         message: 'การจองของคุณเสร็จสมบูรณ์แล้ว',
       })
     }
-  }
-
-  async delete({ view }: HttpContext) {
-    const data = await Log.query().where('id', 1).first()
-    await data?.delete()
-    return view.render('reservesuccess', {
-      header: 'ลบข้อมูลสำเร็จ',
-      message: 'ลบข้อมูลการใช้บริการเสร็จสมบูรณ์แล้ว',
-    })
   }
 }
