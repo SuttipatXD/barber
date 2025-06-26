@@ -3,39 +3,115 @@
   @slot('main')
     <div class="container mt-4">
       <h5 class="fw-bold">
-        <i class="bi bi-people-fill me-2"></i> จองคิวช่าง
+        <i class="bi bi-people-fill me-2"></i>จองคิวช่าง
       </h5>
 
-      <form method="POST" action="{{ route('mains.reserving') }}">
+      <form id="reservingForm">
+        {{-- เพิ่ม ID ให้กับฟอร์ม --}}
         {{ csrfField() }}
-
-        <div class="mb-3 form-check">
-          <input class="form-check-input" type="checkbox" value="1" id="noBarberCheck" onchange="toggleBarberSelect(this)">
-          <label class="form-check-label" for="noBarberCheck">
-            ไม่ระบุช่าง (ระบบจะเลือกให้อัตโนมัติ)
-          </label>
-        </div>
         <div class="mb-3">
-          <label for="barber" class="form-label">เลือกช่าง</label>
-          <select name="barber_id" id="barberSelect" class="form-select" required>
-            <option value="">-- กรุณาเลือกช่าง --</option>
-            @each(barbers in barber)
-              <option value="{{ barbers.id }}">{{ barbers.fullName }}</option>
-            @endeach
+          <label class="form-label">เพศ</label>
+          <div>
+            <div class="form-check form-check-inline">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="gender"
+                id="genderMale"
+                value="male"
+                onchange="handleGenderChange(); sendBookingDataAuto();"
+                {{-- เพิ่ม sendBookingDataAuto() --}}
+              />
+              <label class="form-check-label" for="genderMale">ชาย</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="gender"
+                id="genderFemale"
+                value="female"
+                onchange="handleGenderChange(); sendBookingDataAuto();"
+                {{-- เพิ่ม sendBookingDataAuto() --}}
+              />
+              <label class="form-check-label" for="genderFemale">หญิง</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="serviceSelect" class="form-label">เลือกบริการ</label>
+          <select
+            name="service_id"
+            id="serviceSelect"
+            class="form-select"
+            required
+            disabled
+            onchange="handleServiceChange(); sendBookingDataAuto();"
+            {{-- เพิ่ม sendBookingDataAuto() --}}
+          >
+            <option value="">
+              -- กรุณาเลือกบริการ --
+            </option>
+            <option value="shampoo">
+              สระผม
+            </option>
+            <option value="haircut">
+              ตัดผม
+            </option>
+            <option value="hair_dye">
+              ทำสีผม
+            </option>
           </select>
         </div>
 
+        <div class="mb-3 form-check">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            value="1"
+            id="noBarberCheck"
+            disabled
+            onchange="toggleBarberSelect(this); handleBarberOrNoBarberChange(); sendBookingDataAuto();"
+          />
+          <label class="form-check-label" for="noBarberCheck">
+            ไม่ระบุช่าง (ระบบจะเลือกให้อัตโนมัติ)
+            </label>
+        </div>
         <div class="mb-3">
-          <label for="time" class="form-label">เลือกช่วงเวลา</label>
-          <select name="time" class="form-select" required>
-            @each(time in times)
-              <option value="{{ time.id }}">{{ time.time }}</option>
+          <label for="barberSelect" class="form-label">เลือกช่าง</label>
+          <select
+            name="barber_id"
+            id="barberSelect"
+            class="form-select"
+            required
+            disabled
+            onchange="handleBarberSelect(); handleBarberOrNoBarberChange(); sendBookingDataAuto();"
+          >
+            <option value="">
+              -- กรุณาเลือกช่าง --
+            </option>
+            @each(barbers in barber)
+              <option value="{{ barbers.id }}">
+                {{ barbers.fullName }}
+              </option>
             @endeach
+          </select>
+        </div>
+      </form>
+      <form method="POST" action="{{ route('mains.reserving') }}">
+        {{ csrfField() }}
+        <div class="mb-3">
+          <label for="timeSelect" class="form-label">เลือกช่วงเวลา</label>
+          <select name="time" id="timeSelect" class="form-select" required disabled>
+            <option value="">
+              -- กรุณาเลือกเวลา --
+            </option>
           </select>
         </div>
 
         <div class="d-grid gap-2">
-          <button type="submit" class="btn btn-primary w-100">ยืนยัน</button>
+          <button type="submit" class="btn btn-primary w-100" disabled>ยืนยัน</button>          {{-- เพิ่ม disabled ที่นี่ --}}
           <a type="button" class="btn btn-secondary w-100" href="{{ route('mains.home') }}">กลับ</a>
         </div>
       </form>

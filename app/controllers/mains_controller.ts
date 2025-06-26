@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import Log from '#models/log'
 import Time from '#models/time'
 import User from '#models/user'
 import { HttpContext } from '@adonisjs/core/http'
+import { DateTime } from 'luxon'
 
 export default class MainsController {
   async home({ view }: HttpContext) {
@@ -25,9 +27,189 @@ export default class MainsController {
     return response.ok(employees)
   }
 
-  async time({ view }: HttpContext) {
-    const times = await Time.query().orderBy('time', 'asc')
-    return view.render('time', { times })
+  async reserveTime({ request, response, view }: HttpContext) {
+    const payload = request.all()
+
+    console.log('Received payload:', payload)
+
+    const { gender, service_id, noBarberCheck, barber_id, time } = payload
+
+    let finalSelectedBarber = null
+    let timeOffsetHours = 0
+    let slotDurationMinutes = 0
+
+    if (gender === 'male') {
+      timeOffsetHours = 1
+      console.log(`เพศชาย: บวกเวลาเพิ่ม ${timeOffsetHours} ชั่วโมง`)
+    } else if (gender === 'female') {
+      timeOffsetHours = 2
+      console.log(`เพศหญิง: บวกเวลาเพิ่ม ${timeOffsetHours} ชั่วโมง`)
+    } else {
+      console.warn('ไม่พบข้อมูลเพศที่ถูกต้อง, กำหนด Offset เป็น 0')
+      timeOffsetHours = 0
+    }
+
+    if (barber_id) {
+      const barberId = Number(barber_id)
+      finalSelectedBarber = await User.find(barberId)
+      // ตรวจสอบว่า finalSelectedBarber ถูกพบหรือไม่
+      if (!finalSelectedBarber) {
+        return response.status(404).json({
+          message: 'ไม่พบข้อมูลช่างที่เลือก',
+        })
+      }
+    } else if (noBarberCheck === true) {
+      // เมื่อเลือก "ไม่ระบุช่าง" แต่ต้องการข้อมูลช่างคนแรกที่ว่าง
+      // หรือสุ่มช่าง, หรือส่งเป็น array ของช่าง
+      // ตัวอย่างนี้จะดึงช่างคนแรกที่ตรงเงื่อนไข
+      const potentialBarbers = await User.query().where('status', 2).where('role', 2).limit(1)
+      console.log(`=jk' ${potentialBarbers}`)
+      finalSelectedBarber = potentialBarbers[0] || null // ได้ช่างคนแรก หรือ null ถ้าไม่เจอ
+      if (!finalSelectedBarber) {
+        return response.status(404).json({
+          message: 'ไม่พบช่างที่พร้อมให้บริการ',
+        })
+      }
+    } else {
+      return view.render('reservefail', {
+        header: 'การจองไม่สำเร็จ',
+        message: 'กรุณาระบุช่างหรือเลือก "ไม่ระบุช่าง" ',
+      })
+    }
+
+    const allTimes = await Time.query().orderBy('time', 'asc')
+    const today = DateTime.local().toISODate()
+    console.log(`เวลา ${today} และ ${finalSelectedBarber.id}`)
+
+    // 1. ดึง ID ของเวลาที่ถูกจองจาก Log table
+    let bookedTimeIdsOnly: number[] = []
+    if (finalSelectedBarber) {
+      const rawBookedLogs = await Log.query()
+        .where('employee', finalSelectedBarber.id)
+        .where('work_status', 1)
+        .whereRaw('DATE(created_at) = ?', [today])
+        .select('time') // <--- เลือกแค่ time_id
+
+      bookedTimeIdsOnly = rawBookedLogs.map((log) => log.time)
+      console.log(
+        `ID ของเวลาที่ถูกจองแล้วสำหรับช่าง ${finalSelectedBarber.id} ในวันนี้:`,
+        bookedTimeIdsOnly
+      )
+    } else {
+      console.log('ไม่ได้เลือกช่างเฉพาะ, จะไม่กรองเวลาตาม Log ของช่างคนเดียว')
+    }
+
+    // 2. ดึงข้อมูล time string จาก Time table โดยใช้ ID ที่ได้มา
+    let bookedTimeObjects: { time_id: number; time: string }[] = []
+    if (bookedTimeIdsOnly.length > 0) {
+      const bookedTimesFromTimeTable = await Time.query()
+        .whereIn('id', bookedTimeIdsOnly) // <--- ใช้ whereIn เพื่อหาหลาย ID พร้อมกัน
+        .select('id', 'time') // <--- เลือกทั้ง ID และ time string
+
+      // แปลงให้เป็นรูปแบบเดียวกับที่โค้ดต้องการ
+      bookedTimeObjects = bookedTimesFromTimeTable.map((t) => ({
+        time_id: t.id, // ใช้ 'id' จาก Time table เป็น time_id
+        time: t.time, // ดึง 'time' string ออกมา
+      }))
+    }
+
+    // สร้าง Map ของเวลาทั้งหมดเพื่อใช้ค้นหาเวลาจาก ID ได้ง่ายขึ้น
+    const allTimesMap = new Map(allTimes.map((t) => [t.id, t.time]))
+
+    // คำนวณ "ช่วงเวลาที่ช่างติด" (busy ranges)
+    const busyRanges: { start: Date; end: Date }[] = []
+    const bookedTimeIds: number[] = [] // ยังคงใช้สำหรับกรอง Slot หลัก
+
+    bookedTimeObjects.forEach((log) => {
+      const bookedTimeId = log.time_id
+      const bookedTimeString = allTimesMap.get(bookedTimeId)
+
+      if (bookedTimeString) {
+        bookedTimeIds.push(bookedTimeId) // เก็บ ID ของ Slot ที่ถูกจอง
+
+        const [bookedHours, bookedMinutes] = bookedTimeString.split(':').map(Number)
+
+        const slotStartTime = new Date() // เวลาเริ่มต้นของ Slot ที่จอง
+        slotStartTime.setHours(bookedHours, bookedMinutes, 0, 0)
+        slotStartTime.setFullYear(2000, 0, 1)
+
+        const slotEndTime = new Date(slotStartTime.getTime()) // คัดลอกเวลาเริ่มต้น
+        slotEndTime.setHours(
+          slotStartTime.getHours() + timeOffsetHours,
+          slotStartTime.getMinutes() + slotDurationMinutes,
+          0,
+          0
+        ) // บวก duration ของบริการ
+        slotEndTime.setFullYear(2000, 0, 1)
+
+        busyRanges.push({ start: slotStartTime, end: slotEndTime })
+      } else {
+        console.warn(`Warning: Time string not found for booked ID: ${bookedTimeId}`)
+      }
+    })
+
+    console.log(
+      'ช่วงเวลาที่ช่างไม่ว่าง:',
+      busyRanges.map(
+        (r) => `${r.start.toTimeString().substring(0, 5)} - ${r.end.toTimeString().substring(0, 5)}`
+      )
+    )
+
+    // กรองเวลาที่ว่างและปรับ Offset
+    const availableTimes = allTimes
+      .filter((timeRecord) => {
+        // แปลงเวลาของ timeRecord ปัจจุบันให้เป็น Date object
+        const [currentHours, currentMinutes] = timeRecord.time.split(':').map(Number)
+        const currentTimeSlotStart = new Date()
+        currentTimeSlotStart.setHours(currentHours, currentMinutes, 0, 0)
+        currentTimeSlotStart.setFullYear(2000, 0, 1)
+
+        const currentTimeSlotEnd = new Date(currentTimeSlotStart.getTime())
+        // ต้องบวก duration ของ Slot ปัจจุบัน เพื่อตรวจสอบการซ้อนทับ
+        currentTimeSlotEnd.setHours(
+          currentTimeSlotStart.getHours() + timeOffsetHours,
+          currentTimeSlotStart.getMinutes() + slotDurationMinutes,
+          0,
+          0
+        )
+        currentTimeSlotEnd.setFullYear(2000, 0, 1)
+
+        // ตรวจสอบการซ้อนทับกับ busyRanges
+        for (const busyRange of busyRanges) {
+          // Logic การตรวจสอบการซ้อนทับของช่วงเวลา
+          // ถ้า (เริ่มต้นของ slot ปัจจุบัน < สิ้นสุดของคิวที่จอง) AND (สิ้นสุดของ slot ปัจจุบัน > เริ่มต้นของคิวที่จอง)
+          if (currentTimeSlotStart < busyRange.end && currentTimeSlotEnd > busyRange.start) {
+            return false // Slot ปัจจุบันซ้อนทับกับช่วงที่ช่างไม่ว่าง
+          }
+        }
+
+        // ถ้าผ่านการตรวจสอบการซ้อนทับ
+        return true
+      })
+      .map((timeRecord) => {
+        // ส่วน map ยังคงเหมือนเดิม
+        const [hours, minutes] = timeRecord.time.split(':').map(Number)
+        const date = new Date()
+        date.setHours(hours, minutes, 0, 0)
+        date.setFullYear(2000, 0, 1)
+
+        const displayHours = String(date.getHours()).padStart(2, '0')
+        const displayMinutes = String(date.getMinutes()).padStart(2, '0')
+        const displayTime = `${displayHours}:${displayMinutes}`
+
+        return {
+          id: timeRecord.id,
+          time: displayTime,
+        }
+      })
+    console.log('Final availableTimes to be sent:', availableTimes) // ตรวจสอบค่าสุดท้าย
+
+    return response.status(200).json({
+      message: 'ได้รับข้อมูลเรียบร้อยแล้ว!',
+      timestamp: new Date().toISOString(),
+      availableTimes: availableTimes, // ลบ await ออก
+      selectedBarber: finalSelectedBarber ? finalSelectedBarber.serialize() : null,
+    })
   }
 
   async updateTask({ view, params }: HttpContext) {
@@ -106,8 +288,7 @@ export default class MainsController {
   async reserve({ view }: HttpContext) {
     const dataBarber = await User.query().where('status', 2).where('role', 2)
     const barber = dataBarber.map((b) => b.toJSON())
-    const times = await Time.query().orderBy('time', 'asc')
-    return view.render('reserve', { barber, times })
+    return view.render('reserve', { barber })
   }
 
   async reserving({ view, auth, request }: HttpContext) {
@@ -172,6 +353,7 @@ export default class MainsController {
       reserve.time = time
       reserve.work_status = 1
       await reserve.save()
+      console.log('บันทึกแล้ว')
 
       return view.render('reservesuccess', {
         header: 'การจองสำเร็จ',
