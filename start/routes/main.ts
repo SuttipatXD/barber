@@ -20,5 +20,6 @@ router
     router.post('/reserving', [MainsController, 'reserving']).as('mains.reserving')
     router.get('/history', [MainsController, 'history']).as('mains.history')
     router.post('/reservetime', [MainsController, 'reserveTime']).as('mains.reservetime')
+    router.post('/updatestatus', [MainsController, 'updateStatus']).as('mains.updatestatus')
   })
   .use(middleware.auth())

@@ -361,4 +361,30 @@ export default class MainsController {
       })
     }
   }
+
+  async updateStatus({ view, auth, request, response }: HttpContext) {
+    const payload = request.all()
+    const userId = auth.user!.id
+    console.log('status is:', payload.statusId)
+
+    // 3. ค้นหา User ที่ต้องการอัปเดต
+    const user = await User.find(userId)
+
+    // ตรวจสอบว่าพบ User หรือไม่
+    if (!user) {
+      return view.render('reservefail', {
+        header: 'ไม่สามารถทำรายการได้',
+        message: 'เนื่องจากไม่พบผู้ใช้นี้ในระบบ',
+      })
+    }
+
+    user.status = payload.statusId // หรือ user.idStatus = newStatusId หากคอลัมน์ชื่อนี้
+
+    await user.save()
+
+    return response.status(200).json({
+      message: 'ได้รับข้อมูลเรียบร้อยแล้ว!',
+      timestamp: new Date().toISOString(),
+    })
+  }
 }

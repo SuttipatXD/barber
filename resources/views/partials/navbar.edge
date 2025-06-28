@@ -13,6 +13,36 @@
     @if(auth.user.role === 3 )
       <a type="button" class="btn btn-primary bi bi-alarm" href="{{ route('mains.reserve') }}">        <span class="ms-2">จองคิว</span></a>
     @endif
+    @if(auth.user.role === 2)
+      <div class="flex justify-end">
+        <form id="startWorkForm">
+          {{ csrfField() }}
+    <button
+            type="button"
+            class="btn btn-primary bi bi-play-circle"
+            id="startWorkButton"
+            data-user-id="{{ auth.user.id }}"
+            data-target-status-id="1"
+          >
+            <span class="ms-2">เริ่มรับงาน</span>
+          </button>
+        </form>
+
+        <form id="stopWorkForm">
+          {{ csrfField() }}
+    <button
+            type="button"
+            class="btn btn-danger bi bi-pause-circle"
+            id="stopWorkButton"
+            data-user-id="{{ auth.user.id }}"
+            data-target-status-id="2"
+          >
+            <span class="ms-2">งดรับงาน</span>
+          </button>
+        </form>
+      </div>
+      <input type="hidden" id="currentUserStatus" value="{{ auth.user.status }}" />
+    @endif
   </div>
 </nav>
 

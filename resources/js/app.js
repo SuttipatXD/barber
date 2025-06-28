@@ -317,10 +317,196 @@ document.addEventListener('DOMContentLoaded', async () => {
   })
 })
 
+// ฟังก์ชันสำหรับจัดการการคลิกปุ่ม "เริ่มรับงาน"
+async function handleStartWorkButtonClick(buttonElement) {
+  // ไม่มี user id ใน dataset ของปุ่มนี้แล้ว
+  // const userIdToUpdate = buttonElement.dataset.userId; // ไม่ใช้แล้วเพราะไม่ได้ส่งไปใน URL
+  const userIdToUpdate = 2 // กำหนด User ID เป็น 2 ตามที่เคยระบุใน Route (หรือดึงมาจากที่อื่น)
+
+  // สลับค่า newStatusId ระหว่าง 1 และ 2
+  // ถ้าสถานะปัจจุบันของปุ่มคือ 1 (เริ่มรับงาน) -> nextStatusId เป็น 2 (หยุดรับงาน)
+  // ถ้าสถานะปัจจุบันของปุ่มคือ 2 (หยุดรับงาน) -> nextStatusId เป็น 1 (เริ่มรับงาน)
+  const currentStatusId = parseInt(buttonElement.dataset.newStatusId, 10)
+  const nextStatusId = currentStatusId === 1 ? 2 : 1 // สลับค่า 1 <-> 2
+
+  // ดึง CSRF Token จากฟอร์มที่เกี่ยวข้อง
+  const updateStatusForm = document.getElementById('startWorkForm') // หรือฟอร์มที่เกี่ยวข้อง
+  if (!updateStatusForm) {
+    console.error("Form 'startWorkForm' not found.")
+    alert('Internal error: Form not found.')
+    return
+  }
+  const formData = new FormData(updateStatusForm)
+  const csrfToken = formData.get('_csrf')
+
+  // หาปุ่มคู่กัน (เช่น ถ้าคลิกเริ่มงาน ก็หาปุ่มหยุดงาน)
+  const stopWorkButton = document.getElementById('stopWorkButton')
+
+  console.log(
+    `ปุ่ม "${buttonElement.textContent.trim()}" ถูกคลิกแล้ว (AJAX). สถานะใหม่: ${nextStatusId}`
+  )
+
+  buttonElement.disabled = true // ปิดปุ่มชั่วคราว
+
+  const url = `updatestatus` // ใช้ User ID ใน URL
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfToken,
+      },
+      body: JSON.stringify({ statusId: nextStatusId }), // ส่งค่าสถานะใหม่
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.message || 'Failed to update status')
+    }
+
+    const data = await response.json()
+    console.log('Update successful:', data.message, 'New Status Set:', nextStatusId)
+
+    // --- อัปเดต UI: ซ่อนปุ่มที่ถูกคลิก และแสดงปุ่มอีกปุ่ม ---
+    buttonElement.style.display = 'none' // ซ่อนปุ่มปัจจุบัน (เริ่มรับงาน)
+
+    if (stopWorkButton) {
+      stopWorkButton.style.display = 'inline-block' // แสดงปุ่มหยุดรับงาน
+      stopWorkButton.disabled = false // ทำให้ปุ่มหยุดรับงานใช้งานได้
+      // อัปเดต data-new-status-id ของปุ่มหยุดรับงานให้พร้อมสำหรับคลิกครั้งถัดไป
+      // ถ้า 'เริ่มรับงาน' ตั้งค่าเป็น 1, 'หยุดรับงาน' ควรตั้งค่าเป็น 2 เพื่อให้สลับกลับมาได้
+      stopWorkButton.dataset.newStatusId = '2' // กำหนดให้ปุ่มหยุดรับงานตั้งสถานะเป็น 2
+      stopWorkButton.innerHTML = '<span class="ms-2">งดรับงาน</span>' // ตั้งข้อความคืน
+      stopWorkButton.classList.remove('btn-success', 'btn-primary') // ลบสีเก่าออก
+      stopWorkButton.classList.add('btn-info') // ตั้งสีใหม่
+    }
+    refreshTasks()
+  } catch (error) {
+    console.error('Error updating status:', error)
+    alert(`เกิดข้อผิดพลาด: ${error.message}`)
+    // คืนค่าปุ่มกลับสู่สถานะเดิมหากเกิดข้อผิดพลาด
+    buttonElement.innerHTML = '<span class="ms-2">เริ่มรับงาน</span>'
+    buttonElement.disabled = false
+    buttonElement.style.display = 'inline-block' // แสดงปุ่มกลับมา (เผื่อโดนซ่อน)
+  }
+}
+
+// ฟังก์ชันสำหรับจัดการการคลิกปุ่ม "หยุดรับงาน" (ที่สลับมา)
+async function handleStopWorkButtonClick(buttonElement) {
+  const userIdToUpdate = 2 // กำหนด User ID เป็น 2 (หรือดึงมาจากที่อื่น)
+
+  // สลับค่า newStatusId ระหว่าง 1 และ 2
+  const currentStatusId = parseInt(buttonElement.dataset.newStatusId, 10)
+  const nextStatusId = currentStatusId === 1 ? 2 : 1 // สลับค่า 1 <-> 2
+
+  // ดึง CSRF Token จากฟอร์มที่เกี่ยวข้อง (อาจจะเป็นฟอร์มเดียวกับปุ่มเริ่มงาน)
+  const stopWorkForm = document.getElementById('stopWorkForm') // หรือฟอร์มที่เกี่ยวข้อง
+  if (!stopWorkForm) {
+    console.error("Form 'stopWorkForm' not found.")
+    alert('Internal error: Form not found.')
+    return
+  }
+  const formData = new FormData(stopWorkForm)
+  const csrfToken = formData.get('_csrf')
+
+  const startWorkButton = document.getElementById('startWorkButton')
+
+  console.log(
+    `ปุ่ม "${buttonElement.textContent.trim()}" ถูกคลิกแล้ว (AJAX). สถานะใหม่: ${nextStatusId}`
+  )
+
+  buttonElement.disabled = true
+
+  const url = `updatestatus` // ใช้ User ID ใน URL
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfToken,
+      },
+      body: JSON.stringify({ statusId: nextStatusId }), // ส่งค่าสถานะใหม่
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.message || 'Failed to update status')
+    }
+
+    const data = await response.json()
+    console.log('Update successful:', data.message, 'New Status Set:', nextStatusId)
+
+    // --- อัปเดต UI: ซ่อนปุ่มที่ถูกคลิก และแสดงปุ่มอีกปุ่ม ---
+    buttonElement.style.display = 'none' // ซ่อนปุ่มปัจจุบัน (หยุดรับงาน)
+
+    if (startWorkButton) {
+      startWorkButton.style.display = 'inline-block' // แสดงปุ่มเริ่มรับงาน
+      startWorkButton.disabled = false // ทำให้ปุ่มเริ่มรับงานใช้งานได้
+      // อัปเดต data-new-status-id ของปุ่มเริ่มรับงานให้พร้อมสำหรับคลิกครั้งถัดไป
+      // ถ้า 'หยุดรับงาน' ตั้งค่าเป็น 2, 'เริ่มรับงาน' ควรตั้งค่าเป็น 1 เพื่อให้สลับกลับมาได้
+      startWorkButton.dataset.newStatusId = '1' // กำหนดให้ปุ่มเริ่มรับงานตั้งสถานะเป็น 1
+      startWorkButton.innerHTML = '<span class="ms-2">เริ่มรับงาน</span>' // ตั้งข้อความคืน
+      startWorkButton.classList.remove('btn-success', 'btn-info') // ลบสีเก่าออก
+      startWorkButton.classList.add('btn-primary') // ตั้งสีใหม่
+    }
+    refreshTasks()
+  } catch (error) {
+    console.error('Error updating status:', error)
+    alert(`เกิดข้อผิดพลาด: ${error.message}`)
+    // คืนค่าปุ่มกลับสู่สถานะเดิมหากเกิดข้อผิดพลาด
+    buttonElement.innerHTML = '<span class="ms-2">งดรับงาน</span>'
+    buttonElement.disabled = false
+    buttonElement.style.display = 'inline-block' // แสดงปุ่มกลับมา
+  }
+}
+
+// ฟังก์ชันสำหรับเริ่มต้นการทำงานเมื่อ DOM โหลดเสร็จ
+function initializeUserStatusButtons() {
+  const startWorkButton = document.getElementById('startWorkButton')
+  const stopWorkButton = document.getElementById('stopWorkButton')
+  const currentUserStatusInput = document.getElementById('currentUserStatus')
+
+  if (startWorkButton && stopWorkButton && currentUserStatusInput) {
+    const userStatus = parseInt(currentUserStatusInput.value, 10)
+
+    // ตั้งค่า data-new-status-id เริ่มต้นให้กับปุ่ม
+    startWorkButton.dataset.newStatusId = '1' // ปุ่มเริ่มงานควรส่งค่า 1
+    stopWorkButton.dataset.newStatusId = '2' // ปุ่มหยุดงานควรส่งค่า 2
+
+    if (userStatus === 1) {
+      // User สถานะ "เริ่มรับงาน"
+      stopWorkButton.style.display = 'none'
+      startWorkButton.style.display = 'inline-block'
+    } else if (userStatus === 2) {
+      // User สถานะ "หยุดรับงาน"
+      startWorkButton.style.display = 'none'
+      stopWorkButton.style.display = 'inline-block'
+    } else {
+      // ซ่อนทั้งคู่หากสถานะไม่ตรง
+      startWorkButton.style.display = 'none'
+      stopWorkButton.style.display = 'none'
+      console.warn('Current user status does not match button conditions. Both buttons hidden.')
+    }
+
+    // แนบ Event Listeners ให้กับปุ่ม
+    startWorkButton.addEventListener('click', () => handleStartWorkButtonClick(startWorkButton))
+    stopWorkButton.addEventListener('click', () => handleStopWorkButtonClick(stopWorkButton))
+  } else {
+    console.error('ERROR: One or more status buttons or hidden input not found in the DOM.')
+  }
+}
+
+// เรียกฟังก์ชัน initializeUserStatusButtons เมื่อ DOM โหลดเสร็จสมบูรณ์
+document.addEventListener('DOMContentLoaded', initializeUserStatusButtons)
+
 // เรียกใช้ฟังก์ชันครั้งแรกเมื่อโหลดหน้า เพื่อกำหนดสถานะเริ่มต้น
 document.addEventListener('DOMContentLoaded', () => {
   handleGenderChange() // นี้จะควบคุม serviceSelect, noBarberCheck, barberSelect
   handleServiceChange() // นี้จะควบคุม noBarberCheck, barberSelect อีกที (พิจารณาว่าควรซ้อนกันไหม)
   handleBarberOrNoBarberChange() // นี้จะควบคุม timeSelect
   handleTimeChange() // นี้จะควบคุม submitButton
+  handleStartWorkButtonClick()
+  initializeUserStatusButtons()
 })
