@@ -8,8 +8,3 @@ router.post('/login', [UsersController, 'login']).as('users.login')
 router.get('/logout/:id', [UsersController, 'logout']).as('users.logout')
 router.get('/registerform', [UsersController, 'registerform']).as('users.registerform')
 router.post('/register', [UsersController, 'register']).as('users.register')
-
-// router.get('/create_user', async () => {
-//   const user = await User.create({ id: 1, user_name: 'user1', password: 'user1' })
-//   console.log(user.user_name + ' is created!')
-// })

@@ -55,8 +55,8 @@ export default class UsersController {
       await auth.use('web').login(user)
       console.log('ข้อมูลผู้ใช้: ', user.toJSON())
 
-      user.status = 2
-      await user.save()
+      // user.status = 2
+      // await user.save()
       console.log('เข้าสู่ระบบสำเร็จ')
 
       return response.redirect().toRoute('mains.home')
