@@ -287,6 +287,14 @@ export default class MainsController {
 
   async reserve({ view }: HttpContext) {
     const dataBarber = await User.query().where('status', 2).where('role', 2)
+
+    if (!dataBarber[0]) {
+      return view.render('reservefail', {
+        header: 'การจองไม่สำเร็จ',
+        message: 'ไม่พบช่างในระบบ โปรดลองใหม่อีกครั้ง',
+      })
+    }
+
     const barber = dataBarber.map((b) => b.toJSON())
     return view.render('reserve', { barber })
   }
