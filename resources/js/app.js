@@ -64,18 +64,6 @@ function toggleBarberSelect(checkbox) {
   }
 }
 
-function toggleBarberSelect(checkbox) {
-  const barberSelect = document.getElementById('barberSelect')
-  if (checkbox.checked) {
-    barberSelect.value = ''
-    barberSelect.setAttribute('disabled', 'disabled')
-    barberSelect.removeAttribute('required')
-  } else {
-    barberSelect.removeAttribute('disabled')
-    barberSelect.setAttribute('required', 'required')
-  }
-}
-
 const genderMaleCheck = document.getElementById('genderMale')
 const genderFemaleCheck = document.getElementById('genderFemale')
 const serviceSelect = document.getElementById('serviceSelect')
@@ -135,19 +123,6 @@ function handleServiceChange() {
     noBarberCheck.checked = false // ยกเลิกการเลือก "ไม่ระบุช่าง"
     barberSelect.value = '' // รีเซ็ตค่าเลือกช่าง
     barberSelect.setAttribute('required', 'required') // ทำให้กลับมา required ถ้าไม่มีการเลือกช่าง
-  }
-}
-
-// ฟังก์ชันเดิมสำหรับการเปิด/ปิดช่องเลือกช่าง (ปรับปรุงเล็กน้อยเพื่อเรียก handleBarberOrNoBarberChange)
-function toggleBarberSelect(checkbox) {
-  // อันนี้จะจัดการการ disabled ของ barberSelect เอง
-  if (checkbox.checked) {
-    barberSelect.value = '' // เคลียร์การเลือกช่าง
-    barberSelect.setAttribute('disabled', 'disabled')
-    barberSelect.removeAttribute('required') // ไม่ต้องบังคับเลือกช่าง
-  } else {
-    barberSelect.removeAttribute('disabled')
-    barberSelect.setAttribute('required', 'required') // บังคับเลือกช่าง
   }
 }
 
