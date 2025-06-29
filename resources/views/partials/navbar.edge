@@ -10,8 +10,22 @@
     >
       <i class="bi bi-list" style="font-size: 1.5rem;"></i>
     </button>
-    @if(auth.user.role === 3 )
-      <a type="button" class="btn btn-primary bi bi-alarm" href="{{ route('mains.reserve') }}">        <span class="ms-2">จองคิว</span></a>
+    <div class="text-white">
+      {{ auth.user.fullName }} (
+      @if(auth.user.role === 1)
+        <span>แอดมิน</span>
+      @elseif(auth.user.role === 2)
+        <span>ช่างตัดผม</span>
+      @elseif(auth.user.role === 3)
+        <span>ลูกค้า</span>
+      @else
+        <span>ไม่ระบุตำแหน่ง</span>
+      @endif
+      )
+    </div>
+    @if(auth.user.role === 1 )
+      <div>
+      </div>
     @endif
     @if(auth.user.role === 2)
       <div class="flex justify-end">
@@ -42,6 +56,9 @@
         </form>
       </div>
       <input type="hidden" id="currentUserStatus" value="{{ auth.user.status }}" />
+    @endif
+    @if(auth.user.role === 3 )
+      <a type="button" class="btn btn-primary bi bi-alarm" href="{{ route('mains.reserve') }}">        <span class="ms-2">จองคิว</span></a>
     @endif
   </div>
 </nav>
