@@ -494,7 +494,7 @@ function initializeUserStatusButtons() {
     startWorkButton.addEventListener('click', () => handleStartWorkButtonClick(startWorkButton))
     stopWorkButton.addEventListener('click', () => handleStopWorkButtonClick(stopWorkButton))
   } else {
-    console.error('ERROR: One or more status buttons or hidden input not found in the DOM.')
+    console.log('ERROR: One or more status buttons or hidden input not found in the DOM.')
   }
 }
 

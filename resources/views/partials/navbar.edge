@@ -33,7 +33,7 @@
           {{ csrfField() }}
     <button
             type="button"
-            class="btn btn-primary bi bi-play-circle"
+            class="btn btn-primary bi bi-play-circle workButton"
             id="startWorkButton"
             data-user-id="{{ auth.user.id }}"
             data-target-status-id="1"
@@ -46,7 +46,7 @@
           {{ csrfField() }}
     <button
             type="button"
-            class="btn btn-danger bi bi-pause-circle"
+            class="btn btn-danger bi bi-pause-circle workButton"
             id="stopWorkButton"
             data-user-id="{{ auth.user.id }}"
             data-target-status-id="2"
