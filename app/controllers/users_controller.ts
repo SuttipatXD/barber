@@ -27,7 +27,8 @@ export default class UsersController {
         role: 3,
         status: 1,
       })
-      console.log('สมัครสมาชิกสำเร็จ')
+
+      console.log(`สมัครสมาชิก ${user.fullName} สำเร็จ`)
 
       return view.render('login')
     } catch (error) {

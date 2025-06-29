@@ -27,7 +27,7 @@ export default class MainsController {
   async reserveTime({ request, response, view }: HttpContext) {
     const payload = request.all()
 
-    const { gender, service_id, noBarberCheck, barber_id, time } = payload
+    const { gender, noBarberCheck, barber_id } = payload
 
     let finalSelectedBarber = null
     let timeOffsetHours = 0

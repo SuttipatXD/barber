@@ -12,9 +12,7 @@ router
   .group(() => {
     router.get('/home', [MainsController, 'home']).as('mains.home')
     router.get('/status', [MainsController, 'status']).as('mains.status')
-    router.get('/time', [MainsController, 'time']).as('mains.time')
     router.get('/reserve', [MainsController, 'reserve']).as('mains.reserve')
-    router.post('/transfertask/:id', [MainsController, 'transferTask']).as('mains.transfertask')
     router.post('/updatetask/:id', [MainsController, 'updateTask']).as('mains.updatetask')
     router.post('/deletetask/:id', [MainsController, 'deleteTask']).as('mains.deletetask')
     router.post('/reserving', [MainsController, 'reserving']).as('mains.reserving')
