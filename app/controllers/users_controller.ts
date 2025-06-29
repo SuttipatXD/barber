@@ -14,10 +14,7 @@ export default class UsersController {
 
       // eslint-disable-next-line @typescript-eslint/naming-convention
       const e_mail = payload.email.toString()
-      console.log('mailUser', e_mail)
-
       const existingUser = await User.findBy('email', e_mail)
-      console.log('existingUser', existingUser?.$attributes.email)
 
       if (existingUser) {
         session.flash('errors', 'อีเมล์นี้ถูกใช้ไปแล้ว')
@@ -30,8 +27,7 @@ export default class UsersController {
         role: 3,
         status: 1,
       })
-
-      console.log('user', user)
+      console.log('สมัครสมาชิกสำเร็จ')
 
       return view.render('login')
     } catch (error) {
@@ -48,15 +44,9 @@ export default class UsersController {
     const payload = await request.validateUsing(login)
 
     try {
-      console.log('payload', payload)
       const user = await User.verifyCredentials(payload.email, payload.password)
-      console.log('user', user)
 
       await auth.use('web').login(user)
-      console.log('ข้อมูลผู้ใช้: ', user.toJSON())
-
-      // user.status = 2
-      // await user.save()
       console.log('เข้าสู่ระบบสำเร็จ')
 
       return response.redirect().toRoute('mains.home')

@@ -8,12 +8,10 @@ import { DateTime } from 'luxon'
 export default class MainsController {
   async home({ view }: HttpContext) {
     const employees = await User.query()
-      // .where('users.status', 2)
       .where('role', 2)
       .leftJoin('statuses', 'users.status', 'statuses.id')
       .select('users.*', 'statuses.status_name as employee_status_name')
 
-    // console.log(employees)
     return view.render('home', { employees })
   }
 
@@ -23,14 +21,11 @@ export default class MainsController {
       .leftJoin('statuses', 'users.status', 'statuses.id')
       .select('users.*', 'statuses.status_name as employee_status_name')
 
-    // console.log(employees)
     return response.ok(employees)
   }
 
   async reserveTime({ request, response, view }: HttpContext) {
     const payload = request.all()
-
-    console.log('Received payload:', payload)
 
     const { gender, service_id, noBarberCheck, barber_id, time } = payload
 
@@ -63,7 +58,6 @@ export default class MainsController {
       // หรือสุ่มช่าง, หรือส่งเป็น array ของช่าง
       // ตัวอย่างนี้จะดึงช่างคนแรกที่ตรงเงื่อนไข
       const potentialBarbers = await User.query().where('status', 2).where('role', 2).limit(1)
-      console.log(`=jk' ${potentialBarbers}`)
       finalSelectedBarber = potentialBarbers[0] || null // ได้ช่างคนแรก หรือ null ถ้าไม่เจอ
       if (!finalSelectedBarber) {
         return response.status(404).json({
@@ -214,8 +208,6 @@ export default class MainsController {
 
   async updateTask({ view, params }: HttpContext) {
     const idTask = params.id
-    console.log('task is:', idTask)
-
     const task = await Log.find(idTask)
 
     if (!task) {
@@ -237,8 +229,6 @@ export default class MainsController {
 
   async deleteTask({ view, params }: HttpContext) {
     const idTask = params.id
-    console.log('task is:', idTask)
-
     const task = await Log.find(idTask)
 
     if (!task) {
@@ -303,7 +293,6 @@ export default class MainsController {
     const customerId = auth.user!.id
     const { time } = request.only(['time'])
     const selectedBarberId = request.input('barber_id') ?? 0
-    console.log('เลือกช่างจาก :', selectedBarberId)
 
     let employeeId
 
@@ -373,7 +362,6 @@ export default class MainsController {
   async updateStatus({ view, auth, request, response }: HttpContext) {
     const payload = request.all()
     const userId = auth.user!.id
-    console.log('status is:', payload.statusId)
 
     // 3. ค้นหา User ที่ต้องการอัปเดต
     const user = await User.find(userId)

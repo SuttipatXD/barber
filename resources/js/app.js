@@ -3,7 +3,6 @@ console.log('join ./app.js')
 async function refreshTasks() {
   const res = await fetch('/status')
   const data = await res.json()
-  // console.log('data: ', data)
 
   let html = ''
 
@@ -268,7 +267,6 @@ async function sendBookingDataAuto() {
     const contentType = response.headers.get('Content-Type')
     if (contentType && contentType.includes('application/json')) {
       const data = await response.json()
-      console.log('Send data:', data)
 
       // 1. นำ availableTimes ไปเติมใน dropdown (ตามที่เราทำไปแล้ว)
       timeSelect.innerHTML = '<option value="">-- กรุณาเลือกเวลา --</option>' // ล้างของเก่า
