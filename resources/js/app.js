@@ -64,7 +64,6 @@ function toggleBarberSelect(checkbox) {
   }
 }
 
-// ฟังก์ชันสำหรับเปิด/ปิดช่องเลือกช่าง (เหมือนเดิม)
 function toggleBarberSelect(checkbox) {
   const barberSelect = document.getElementById('barberSelect')
   if (checkbox.checked) {
