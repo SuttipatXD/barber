@@ -53,15 +53,13 @@
             <option value="">
               -- กรุณาเลือกบริการ --
             </option>
-            <option value="shampoo">
-              สระผม
-            </option>
-            <option value="haircut">
-              ตัดผม
-            </option>
-            <option value="hair_dye">
-              ทำสีผม
-            </option>
+
+            @each(service in services)
+              <option value="{{ service.id }}">
+                {{ service.service_name }}
+              </option>
+            @endeach
+            
           </select>
         </div>
 
