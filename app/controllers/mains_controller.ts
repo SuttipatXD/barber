@@ -25,11 +25,6 @@ export default class MainsController {
     return response.ok(employees)
   }
 
-  async getService({ response }: HttpContext) {
-    const services = await Service.query().select('service_name').where('service_status', 1)
-    return response.ok(services)
-  }
-
   async reserveTime({ request, response, view }: HttpContext) {
     const payload = request.all()
 
