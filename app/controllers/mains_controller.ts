@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import Log from '#models/log'
+import Service from '#models/service'
 import Time from '#models/time'
 import User from '#models/user'
 import { HttpContext } from '@adonisjs/core/http'
@@ -22,6 +23,11 @@ export default class MainsController {
       .select('users.*', 'statuses.status_name as employee_status_name')
 
     return response.ok(employees)
+  }
+
+  async getService({ response }: HttpContext) {
+    const services = await Service.query().select('service_name').where('service_status', 1)
+    return response.ok(services)
   }
 
   async reserveTime({ request, response, view }: HttpContext) {
