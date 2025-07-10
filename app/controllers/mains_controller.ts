@@ -292,7 +292,9 @@ export default class MainsController {
     }
 
     const barber = dataBarber.map((b) => b.toJSON())
-    return view.render('reserve', { barber })
+    const services = await Service.query().select('id', 'service_name').where('service_status', 1)
+
+    return view.render('reserve', { barber, services })
   }
 
   async reserving({ view, auth, request }: HttpContext) {
