@@ -64,6 +64,18 @@ function toggleBarberSelect(checkbox) {
   }
 }
 
+function toggleNoBarberSelect(checkbox) {
+  // อันนี้จะจัดการการ disabled ของ barberSelect เอง
+  if (checkbox.checked) {
+    barberSelect.value = '' // เคลียร์การเลือกช่าง
+    barberSelect.setAttribute('disabled', 'disabled')
+    barberSelect.removeAttribute('required') // ไม่ต้องบังคับเลือกช่าง
+  } else {
+    barberSelect.removeAttribute('disabled')
+    barberSelect.setAttribute('required', 'required') // บังคับเลือกช่าง
+  }
+}
+
 const genderMaleCheck = document.getElementById('genderMale')
 const genderFemaleCheck = document.getElementById('genderFemale')
 const serviceSelect = document.getElementById('serviceSelect')
